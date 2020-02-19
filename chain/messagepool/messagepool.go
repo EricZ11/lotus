@@ -44,7 +44,7 @@ var (
 )
 
 const (
-	msgTopic = "/fil/messages"
+	msgTopic = "/fil/msgs"
 
 	localMsgsDs = "/mpool/local"
 
