@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"github.com/filecoin-project/lotus/chain/vm"
 	"time"
 
 	"github.com/filecoin-project/go-address"
@@ -71,6 +72,7 @@ type FullNode interface {
 	WalletBalance(context.Context, address.Address) (types.BigInt, error)
 	WalletSign(context.Context, address.Address, []byte) (*types.Signature, error)
 	WalletSignMessage(context.Context, address.Address, *types.Message) (*types.SignedMessage, error)
+	WalletVerify(context.Context, address.Address, []byte, *types.Signature) bool
 	WalletDefaultAddress(context.Context) (address.Address, error)
 	WalletSetDefault(context.Context, address.Address) error
 	WalletExport(context.Context, address.Address) (*types.KeyInfo, error)
@@ -97,8 +99,8 @@ type FullNode interface {
 	//ClientListAsks() []Ask
 
 	// if tipset is nil, we'll use heaviest
-	StateCall(context.Context, *types.Message, types.TipSetKey) (*MethodCall, error)
-	StateReplay(context.Context, types.TipSetKey, cid.Cid) (*ReplayResults, error)
+	StateCall(context.Context, *types.Message, types.TipSetKey) (*InvocResult, error)
+	StateReplay(context.Context, types.TipSetKey, cid.Cid) (*InvocResult, error)
 	StateGetActor(ctx context.Context, actor address.Address, tsk types.TipSetKey) (*types.Actor, error)
 	StateReadState(ctx context.Context, act *types.Actor, tsk types.TipSetKey) (*ActorState, error)
 	StateListMessages(ctx context.Context, match *types.Message, tsk types.TipSetKey, toht uint64) ([]cid.Cid, error)
@@ -270,15 +272,11 @@ type RetrievalOrder struct {
 	MinerPeerID peer.ID
 }
 
-type ReplayResults struct {
-	Msg     *types.Message
-	Receipt *types.MessageReceipt
+type InvocResult struct {
+	Msg *types.Message
+	MsgRct *types.MessageReceipt
+	InternalExecutions []*vm.ExecutionResult
 	Error   string
-}
-
-type MethodCall struct {
-	types.MessageReceipt
-	Error string
 }
 
 type ActiveSync struct {
